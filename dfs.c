@@ -39,7 +39,8 @@ enum directions
     up,
     down,
     left,
-    right
+    right,
+    start
 };
 
 void print_visited()
@@ -58,35 +59,37 @@ void print_visited()
     printf("\n");
 }
 
-int dfs(int row, int col)
+int dfs(int row, int col, int direction)
 {
     int *current = &visited[row][col];
 
     if (*current == empty)
     {
         *current = crumb;
+        //path[pathIndex] = direction;
+        //pathIndex++;
 
         //printf("row: %d, column: %d \n", row, col);
 
-        if (dfs(row, col - 1))
+        if (dfs(row, col - 1, left))
         {
             *current = crumb;
             return 1;
         }
 
-        if (dfs(row + 1, col))
+        if (dfs(row + 1, col, down))
         {
             *current = crumb;
             return 1;
         }
 
-        if (dfs(row, col + 1))
+        if (dfs(row, col + 1, right))
         {
             *current = crumb;
             return 1;
         }
 
-        if (dfs(row - 1, col))
+        if (dfs(row - 1, col, up))
         {
             *current = crumb;
             return 1;
@@ -113,9 +116,9 @@ int main()
 {
 
     // print_visited();
-    dfs(start_row, start_col);
+    dfs(start_row, start_col, start);
     // print_visited();
-    print_path();
+    // print_path();
 
     return 0;
 }
