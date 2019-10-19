@@ -18,10 +18,13 @@ int **visited[15][19] = {
     {1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
 
+int *path[200];
+
 int rows = 15;
 int cols = 19;
 int start_row = 1;
 int start_col = 1;
+int pathIndex = 0;
 
 enum terrain
 {
@@ -29,6 +32,14 @@ enum terrain
     wall,
     goal,
     crumb
+};
+
+enum directions
+{
+    up,
+    down,
+    left,
+    right
 };
 
 void print_visited()
@@ -54,6 +65,8 @@ int dfs(int row, int col)
     if (*current == empty)
     {
         *current = crumb;
+
+        //printf("row: %d, column: %d \n", row, col);
 
         if (dfs(row, col - 1))
         {
@@ -83,12 +96,26 @@ int dfs(int row, int col)
     return 0;
 }
 
+void print_path()
+{
+    for (int i = 0; i < 200; i++)
+    {
+        printf("Direction: %d \n", path[i]);
+    }
+}
+
+void alloc_path()
+{
+    *path = malloc(200 * sizeof(int *));
+}
+
 int main()
 {
 
     // print_visited();
     dfs(start_row, start_col);
     // print_visited();
+    print_path();
 
     return 0;
 }
