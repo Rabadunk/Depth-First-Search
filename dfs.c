@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int **visited[15][19] = {
+int visited[15][19] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
     {1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1},
@@ -40,7 +40,8 @@ enum directions
     down,
     left,
     right,
-    start
+    start,
+    reverse
 };
 
 void print_visited()
@@ -59,44 +60,52 @@ void print_visited()
     printf("\n");
 }
 
-int dfs(int row, int col, int direction)
+int dfs(int row, int col, int prevRow, int prevCol, int direction, int prev_direction)
 {
     int *current = &visited[row][col];
 
     if (*current == empty)
     {
         *current = crumb;
-        //path[pathIndex] = direction;
-        //pathIndex++;
+        path[pathIndex] = direction;
+        pathIndex++;
 
-        //printf("row: %d, column: %d \n", row, col);
+        int sum = 0;
 
-        if (dfs(row, col - 1, left))
-        {
-            *current = crumb;
-            return 1;
-        }
-
-        if (dfs(row + 1, col, down))
-        {
-            *current = crumb;
-            return 1;
-        }
-
-        if (dfs(row, col + 1, right))
-        {
-            *current = crumb;
-            return 1;
-        }
-
-        if (dfs(row - 1, col, up))
-        {
-            *current = crumb;
-            return 1;
-        }
+        printf("row: %d, column: %d, direction: %d\n", row, col, direction);
+        dfs(row, col - 1, row, col, left, opp_direction(direction));
+        dfs(row + 1, col, row, col, down, opp_direction(direction));
+        dfs(row, col + 1, row, col, right, opp_direction(direction));
+        dfs(row - 1, col, row, col, up, opp_direction(direction));
+        printf("prev row: %d, prev column: %d, prev direction: %d \n", prevRow, prevCol, prev_direction);
     }
 
     return 0;
+}
+
+int opp_direction(int direction)
+{
+    if (direction == up)
+    {
+        return down;
+    }
+
+    if (direction == down)
+    {
+        return up;
+    }
+
+    if (direction == right)
+    {
+        return left;
+    }
+
+    if (direction == left)
+    {
+        return right;
+    }
+
+    return up;
 }
 
 void print_path()
@@ -116,7 +125,7 @@ int main()
 {
 
     // print_visited();
-    dfs(start_row, start_col, start);
+    dfs(start_row, start_col, 0, 0, start, start);
     // print_visited();
     // print_path();
 
