@@ -1,58 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "map.h"
 
-int visited[15][19] = {
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 0, 1, 2, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 1},
-    {1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1},
-    {1, 0, 1, 0, 1, 0, 1, 2, 1, 2, 0, 2, 1, 0, 0, 2, 1, 0, 1},
-    {1, 0, 1, 0, 1, 2, 0, 2, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1},
-    {1, 2, 0, 2, 0, 2, 1, 2, 0, 2, 1, 0, 1, 2, 0, 0, 0, 2, 1},
-    {1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1},
-    {1, 2, 0, 2, 0, 2, 0, 2, 1, 2, 1, 0, 1, 0, 1, 2, 0, 2, 1},
-    {1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1},
-    {1, 2, 0, 2, 1, 0, 1, 2, 0, 2, 1, 2, 0, 2, 1, 0, 0, 2, 1},
-    {1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1},
-    {1, 2, 0, 0, 0, 2, 0, 2, 1, 2, 0, 2, 0, 2, 1, 2, 0, 2, 1},
-    {1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1},
-    {1, 2, 0, 0, 0, 0, 0, 2, 1, 2, 0, 0, 0, 0, 0, 2, 0, 2, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
-
-char *path[200];
-
-int rows = 15;
-int cols = 19;
-int start_row = 1;
-int start_col = 1;
-int pathIndex = 0;
-
-enum terrain
-{
-    empty,
-    wall,
-    intersection,
-    crumb,
-    crumbed_intersection
-};
-
-enum directions
-{
-    up,
-    down,
-    left,
-    right,
-    start,
-    reverse
-};
-
-int prev_added_direction = down;
-
-enum commands
-{
-    turn_right,
-    turn_left,
-    u_turn
-};
+int prev_added_direction = start;
 
 int opp_direction(int direction)
 {
@@ -79,27 +29,15 @@ int opp_direction(int direction)
     return up;
 }
 
-void print_visited()
-{
-
-    for (int i = 0; i < rows; i++)
-    {
-        for (int j = 0; j < cols; j++)
-        {
-            printf("%d", visited[i][j]);
-        }
-
-        printf("\n");
-    }
-
-    printf("\n");
-}
-
 void add_to_path(int direction)
 {
 
     switch (direction)
     {
+    case start:
+        path[pathIndex] = 'f';
+        pathIndex++;
+        break;
     case up:
         if (prev_added_direction == down)
         {
@@ -201,6 +139,22 @@ void add_to_path(int direction)
     };
 }
 
+void print_map()
+{
+
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            printf("%d", map[i][j]);
+        }
+
+        printf("\n");
+    }
+
+    printf("\n");
+}
+
 void print_path()
 {
     printf("path: ");
@@ -214,7 +168,7 @@ void print_path()
 
 int dfs(int row, int col, int prevRow, int prevCol, int direction, int prev_direction)
 {
-    int *current = &visited[row][col];
+    int *current = &map[row][col];
 
     if (*current == empty || *current == intersection)
     {
@@ -241,8 +195,6 @@ int dfs(int row, int col, int prevRow, int prevCol, int direction, int prev_dire
         dfs(row, col + 1, row, col, right, opp_direction(direction));
         dfs(row - 1, col, row, col, up, opp_direction(direction));
 
-        print_path();
-
         if (*current == crumbed_intersection)
         {
             add_to_path(prev_direction);
@@ -262,9 +214,8 @@ void alloc_path()
 int main()
 {
 
-    // print_visited();
     dfs(start_row, start_col, 0, 0, down, start);
-    // print_visited();
+    print_path();
 
     return 0;
 }
