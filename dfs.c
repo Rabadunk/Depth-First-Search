@@ -3,19 +3,19 @@
 
 int visited[15][19] = {
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-    {1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 2, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0, 0, 2, 1},
     {1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1},
-    {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1},
-    {1, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1},
-    {1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1},
+    {1, 0, 1, 0, 1, 0, 1, 2, 1, 2, 0, 2, 1, 0, 0, 2, 1, 0, 1},
+    {1, 0, 1, 0, 1, 2, 0, 2, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1},
+    {1, 2, 0, 2, 0, 2, 1, 2, 0, 2, 1, 0, 1, 2, 0, 0, 0, 2, 1},
     {1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 1},
+    {1, 2, 0, 2, 0, 2, 0, 2, 1, 2, 1, 0, 1, 0, 1, 2, 0, 2, 1},
     {1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 1},
-    {1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1},
+    {1, 2, 0, 2, 1, 0, 1, 2, 0, 2, 1, 2, 0, 2, 1, 0, 0, 2, 1},
     {1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1},
+    {1, 2, 0, 0, 0, 2, 0, 2, 1, 2, 0, 2, 0, 2, 1, 2, 0, 2, 1},
     {1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1},
-    {1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+    {1, 2, 0, 0, 0, 0, 0, 2, 1, 2, 0, 0, 0, 0, 0, 2, 0, 2, 1},
     {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
 
 char *path[200];
@@ -30,8 +30,9 @@ enum terrain
 {
     empty,
     wall,
-    goal,
-    crumb
+    intersection,
+    crumb,
+    crumbed_intersection
 };
 
 enum directions
@@ -42,6 +43,15 @@ enum directions
     right,
     start,
     reverse
+};
+
+int prev_added_direction = down;
+
+enum commands
+{
+    turn_right,
+    turn_left,
+    u_turn
 };
 
 int opp_direction(int direction)
@@ -91,38 +101,137 @@ void add_to_path(int direction)
     switch (direction)
     {
     case up:
-        path[pathIndex] = 'u';
-        pathIndex++;
+        if (prev_added_direction == down)
+        {
+            path[pathIndex] = 'u';
+            pathIndex++;
+        }
+        else if (prev_added_direction == left)
+        {
+            path[pathIndex] = 'r';
+            pathIndex++;
+        }
+        else if (prev_added_direction == right)
+        {
+            path[pathIndex] = 'l';
+            pathIndex++;
+        }
+        else if (prev_added_direction == up)
+        {
+            path[pathIndex] = 's';
+            pathIndex++;
+        }
+
+        prev_added_direction = up;
+
         break;
     case down:
-        path[pathIndex] = 'd';
-        pathIndex++;
+        if (prev_added_direction == up)
+        {
+            path[pathIndex] = 'u';
+            pathIndex++;
+        }
+        else if (prev_added_direction == left)
+        {
+            path[pathIndex] = 'l';
+            pathIndex++;
+        }
+        else if (prev_added_direction == right)
+        {
+            path[pathIndex] = 'r';
+            pathIndex++;
+        }
+        else if (prev_added_direction == down)
+        {
+            path[pathIndex] = 's';
+            pathIndex++;
+        }
+
+        prev_added_direction = down;
         break;
     case left:
-        path[pathIndex] = 'l';
-        pathIndex++;
+        if (prev_added_direction == right)
+        {
+            path[pathIndex] = 'u';
+            pathIndex++;
+        }
+        else if (prev_added_direction == down)
+        {
+            path[pathIndex] = 'r';
+            pathIndex++;
+        }
+        else if (prev_added_direction == up)
+        {
+            path[pathIndex] = 'l';
+            pathIndex++;
+        }
+        else if (prev_added_direction == left)
+        {
+            path[pathIndex] = 's';
+            pathIndex++;
+        }
+
+        prev_added_direction = left;
         break;
 
     case right:
-        path[pathIndex] = 'r';
-        pathIndex++;
-        break;
-    case reverse:
-        path[pathIndex] = 'u';
-        pathIndex++;
+        if (prev_added_direction == left)
+        {
+            path[pathIndex] = 'u';
+            pathIndex++;
+        }
+        else if (prev_added_direction == down)
+        {
+            path[pathIndex] = 'l';
+            pathIndex++;
+        }
+        else if (prev_added_direction == up)
+        {
+            path[pathIndex] = 'r';
+            pathIndex++;
+        }
+        else if (prev_added_direction == right)
+        {
+            path[pathIndex] = 's';
+            pathIndex++;
+        }
+
+        prev_added_direction = right;
         break;
     };
+}
+
+void print_path()
+{
+    printf("path: ");
+    for (int i = 0; i < pathIndex; i++)
+    {
+        printf("%c", path[i]);
+    }
+
+    printf("\n");
 }
 
 int dfs(int row, int col, int prevRow, int prevCol, int direction, int prev_direction)
 {
     int *current = &visited[row][col];
 
-    if (*current == empty)
+    if (*current == empty || *current == intersection)
     {
-        *current = crumb;
 
-        add_to_path(direction);
+        if (*current == empty)
+        {
+            *current = crumb;
+        }
+        else if (*current == intersection)
+        {
+            *current = crumbed_intersection;
+        }
+
+        if (*current == crumbed_intersection)
+        {
+            add_to_path(direction);
+        }
 
         int sum = 0;
 
@@ -132,20 +241,17 @@ int dfs(int row, int col, int prevRow, int prevCol, int direction, int prev_dire
         dfs(row, col + 1, row, col, right, opp_direction(direction));
         dfs(row - 1, col, row, col, up, opp_direction(direction));
 
-        add_to_path(prev_direction);
+        print_path();
+
+        if (*current == crumbed_intersection)
+        {
+            add_to_path(prev_direction);
+        }
 
         //printf("prev row: %d, prev column: %d, prev direction: %d \n", prevRow, prevCol, prev_direction);
     }
 
     return 0;
-}
-
-void print_path()
-{
-    for (int i = 0; i < 200; i++)
-    {
-        printf("Direction: %c \n", path[i]);
-    }
 }
 
 void alloc_path()
@@ -157,9 +263,8 @@ int main()
 {
 
     // print_visited();
-    dfs(start_row, start_col, 0, 0, start, start);
+    dfs(start_row, start_col, 0, 0, down, start);
     // print_visited();
-    print_path();
 
     return 0;
 }
