@@ -1,0 +1,2 @@
+            path[pathIndex] = straight;
+            pathIndex++;

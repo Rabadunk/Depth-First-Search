@@ -29,138 +29,50 @@ int opp_direction(int direction)
     return up;
 }
 
-void add_to_path(int direction)
+void add_to_path(int this_row, int this_col)
 {
-
-    switch (direction)
+    if (this_row > prev_added_row)
     {
-    case start:
-        path[pathIndex] = 'f';
+        path[pathIndex] = down;
         pathIndex++;
-        break;
-    case up:
-        if (prev_added_direction == down)
-        {
-            path[pathIndex] = 'u';
-            pathIndex++;
-        }
-        else if (prev_added_direction == left)
-        {
-            path[pathIndex] = 'r';
-            pathIndex++;
-        }
-        else if (prev_added_direction == right)
-        {
-            path[pathIndex] = 'l';
-            pathIndex++;
-        }
-        else if (prev_added_direction == up)
-        {
-            path[pathIndex] = 's';
-            pathIndex++;
-        }
-
-        prev_added_direction = up;
-
-        break;
-    case down:
-        if (prev_added_direction == up)
-        {
-            path[pathIndex] = 'u';
-            pathIndex++;
-        }
-        else if (prev_added_direction == left)
-        {
-            path[pathIndex] = 'l';
-            pathIndex++;
-        }
-        else if (prev_added_direction == right)
-        {
-            path[pathIndex] = 'r';
-            pathIndex++;
-        }
-        else if (prev_added_direction == down)
-        {
-            path[pathIndex] = 's';
-            pathIndex++;
-        }
-
-        prev_added_direction = down;
-        break;
-    case left:
-        if (prev_added_direction == right)
-        {
-            path[pathIndex] = 'u';
-            pathIndex++;
-        }
-        else if (prev_added_direction == down)
-        {
-            path[pathIndex] = 'r';
-            pathIndex++;
-        }
-        else if (prev_added_direction == up)
-        {
-            path[pathIndex] = 'l';
-            pathIndex++;
-        }
-        else if (prev_added_direction == left)
-        {
-            path[pathIndex] = 's';
-            pathIndex++;
-        }
-
-        prev_added_direction = left;
-        break;
-
-    case right:
-        if (prev_added_direction == left)
-        {
-            path[pathIndex] = 'u';
-            pathIndex++;
-        }
-        else if (prev_added_direction == down)
-        {
-            path[pathIndex] = 'l';
-            pathIndex++;
-        }
-        else if (prev_added_direction == up)
-        {
-            path[pathIndex] = 'r';
-            pathIndex++;
-        }
-        else if (prev_added_direction == right)
-        {
-            path[pathIndex] = 's';
-            pathIndex++;
-        }
-
-        prev_added_direction = right;
-        break;
-    };
+        prev_added_row = this_row;
+    }
+    else if (this_row < prev_added_row)
+    {
+        path[pathIndex] = up;
+        pathIndex++;
+        prev_added_row = this_row;
+    }
+    else if (this_col > prev_added_col)
+    {
+        path[pathIndex] = right;
+        pathIndex++;
+        prev_added_col = this_col;
+    }
+    else if (this_col < prev_added_col)
+    {
+        path[pathIndex] = left;
+        pathIndex++;
+        prev_added_col = this_col;
+    }
 }
 
-void print_map()
+void print_path()
 {
-
-    for (int i = 0; i < rows; i++)
+    for (int i = 0; i < pathIndex; i++)
     {
-        for (int j = 0; j < cols; j++)
-        {
-            printf("%d", map[i][j]);
-        }
-
-        printf("\n");
+        printf("%d: %d \n", i, path[i]);
     }
 
     printf("\n");
 }
 
-void print_path()
+void print_command()
 {
-    printf("path: ");
-    for (int i = 0; i < pathIndex; i++)
+    printf("commands size: %d \n", commandIndex);
+    for (int i = 0; i < commandIndex; i++)
     {
-        printf("%c", path[i]);
+        printf("%d: %d \n", i, commands[i]);
     }
 
     printf("\n");
@@ -173,32 +85,52 @@ int dfs(int row, int col, int prevRow, int prevCol, int direction, int prev_dire
     if (*current == empty || *current == intersection)
     {
 
+        int me = 0;
+
+        add_to_path(row, col);
+
         if (*current == empty)
         {
+            me = crumb;
             *current = crumb;
         }
         else if (*current == intersection)
         {
+            me = crumbed_intersection;
             *current = crumbed_intersection;
+            path[pathIndex] = straight;
+            pathIndex++;
         }
 
-        if (*current == crumbed_intersection)
+        printf("%d %d,", row, col);
+
+        if (dfs(row, col - 1, row, col, left, opp_direction(direction)))
         {
-            add_to_path(direction);
-        }
+            *current = me;
+            return 1;
+        };
 
-        int sum = 0;
-
-        //printf("row: %d, column: %d, direction: %d\n", row, col, direction);
-        dfs(row, col - 1, row, col, left, opp_direction(direction));
-        dfs(row + 1, col, row, col, down, opp_direction(direction));
-        dfs(row, col + 1, row, col, right, opp_direction(direction));
-        dfs(row - 1, col, row, col, up, opp_direction(direction));
-
-        if (*current == crumbed_intersection)
+        if (dfs(row + 1, col, row, col, down, opp_direction(direction)))
         {
-            add_to_path(prev_direction);
-        }
+            *current = me;
+            return 1;
+        };
+
+        if (dfs(row, col + 1, row, col, right, opp_direction(direction)))
+        {
+            *current = me;
+            return 1;
+        };
+
+        if (dfs(row - 1, col, row, col, up, opp_direction(direction)))
+        {
+            *current = me;
+            return 1;
+        };
+
+        printf("%d %d,", row, col);
+
+        add_to_path(row, col);
 
         //printf("prev row: %d, prev column: %d, prev direction: %d \n", prevRow, prevCol, prev_direction);
     }
@@ -208,14 +140,45 @@ int dfs(int row, int col, int prevRow, int prevCol, int direction, int prev_dire
 
 void alloc_path()
 {
-    *path = malloc(200 * sizeof(char *));
+    *path = malloc(350 * sizeof(int *));
+    *commands = malloc(350 * sizeof(int *));
+}
+
+void make_commands()
+{
+
+    for (int i = 1; i < pathIndex - 1; i++)
+    {
+
+        int prev = path[i - 1];
+        int next = path[i + 1];
+        int current = path[i];
+
+        if (current == straight && prev != next)
+        {
+            commands[commandIndex] = next;
+            commandIndex++;
+        }
+        else if (current == straight && prev == next)
+        {
+            commands[commandIndex] = straight;
+            commandIndex++;
+        }
+        else if (current != next && next != straight)
+        {
+            commands[commandIndex] = next;
+            commandIndex++;
+        }
+    }
 }
 
 int main()
 {
-
+    alloc_path();
     dfs(start_row, start_col, 0, 0, down, start);
     print_path();
+    make_commands();
+    print_command();
 
     return 0;
 }
