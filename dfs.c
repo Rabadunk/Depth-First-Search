@@ -40,11 +40,30 @@ void print_coords()
 {
     printf("\n");
 
-    printf("printing coordinates array\n");
+    printf("printing coordinates array, size: %d\n", coordsIndex);
 
     for (int i = 0; i < coordsIndex; i++)
     {
         printf("%d %d,", rowcoords[i], colcoords[i]);
+    }
+
+    printf("\n");
+}
+
+void print_maze()
+{
+    printf("\n");
+
+    printf("maze\n");
+
+    for (int i = 0; i < rows; i++)
+    {
+        for (int j = 0; j < cols; j++)
+        {
+            printf(" %d ", map[i][j]);
+        }
+
+        printf("\n");
     }
 
     printf("\n");
@@ -117,17 +136,12 @@ int dfs(int row, int col, int prevRow, int prevCol, int direction, int prev_dire
     return 0;
 }
 
-void alloc_path()
-{
-    *path = malloc(350 * sizeof(int *));
-    *commands = malloc(350 * sizeof(int *));
-}
-
 int main()
 {
-    alloc_path();
+    print_maze();
     dfs(start_row, start_col, 0, 0, down, start);
     print_coords();
+    print_maze();
 
     return 0;
 }
