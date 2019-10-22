@@ -33,10 +33,13 @@ int start_row = 1;
 int start_col = 1;
 
 int *path[350];
+int *rowcoords[350];
+int *colcoords[350];
 int *commands[300];
 
 int pathIndex = 0;
 int commandIndex = 0;
+int coordsIndex = 0;
 
 enum terrain
 {

@@ -29,50 +29,22 @@ int opp_direction(int direction)
     return up;
 }
 
-void add_to_path(int this_row, int this_col)
+void add_coords(int x, int y)
 {
-    if (this_row > prev_added_row)
-    {
-        path[pathIndex] = down;
-        pathIndex++;
-        prev_added_row = this_row;
-    }
-    else if (this_row < prev_added_row)
-    {
-        path[pathIndex] = up;
-        pathIndex++;
-        prev_added_row = this_row;
-    }
-    else if (this_col > prev_added_col)
-    {
-        path[pathIndex] = right;
-        pathIndex++;
-        prev_added_col = this_col;
-    }
-    else if (this_col < prev_added_col)
-    {
-        path[pathIndex] = left;
-        pathIndex++;
-        prev_added_col = this_col;
-    }
+    rowcoords[coordsIndex] = x;
+    colcoords[coordsIndex] = y;
+    coordsIndex++;
 }
 
-void print_path()
+void print_coords()
 {
-    for (int i = 0; i < pathIndex; i++)
-    {
-        printf("%d: %d \n", i, path[i]);
-    }
-
     printf("\n");
-}
 
-void print_command()
-{
-    printf("commands size: %d \n", commandIndex);
-    for (int i = 0; i < commandIndex; i++)
+    printf("printing coordinates array\n");
+
+    for (int i = 0; i < coordsIndex; i++)
     {
-        printf("%d: %d \n", i, commands[i]);
+        printf("%d %d,", rowcoords[i], colcoords[i]);
     }
 
     printf("\n");
@@ -87,8 +59,6 @@ int dfs(int row, int col, int prevRow, int prevCol, int direction, int prev_dire
 
         int me = 0;
 
-        add_to_path(row, col);
-
         if (*current == empty)
         {
             me = crumb;
@@ -98,41 +68,50 @@ int dfs(int row, int col, int prevRow, int prevCol, int direction, int prev_dire
         {
             me = crumbed_intersection;
             *current = crumbed_intersection;
-            path[pathIndex] = straight;
-            pathIndex++;
         }
 
         printf("%d %d,", row, col);
+        add_coords(row, col);
 
         if (dfs(row, col - 1, row, col, left, opp_direction(direction)))
         {
             *current = me;
+            printf("%d %d,", row, col - 1);
+            add_coords(row, col - 1);
             return 1;
-        };
+        }
 
         if (dfs(row + 1, col, row, col, down, opp_direction(direction)))
         {
             *current = me;
+            printf("%d %d,", row + 1, col);
+            add_coords(row + 1, col);
             return 1;
-        };
+        }
 
         if (dfs(row, col + 1, row, col, right, opp_direction(direction)))
         {
+            printf("%d %d,", row, col + 1);
+            add_coords(row, col + 1);
             *current = me;
             return 1;
-        };
+        }
 
         if (dfs(row - 1, col, row, col, up, opp_direction(direction)))
         {
+            printf("%d %d,", row - 1, col);
+            add_coords(row - 1, col);
             *current = me;
             return 1;
-        };
-
-        printf("%d %d,", row, col);
-
-        add_to_path(row, col);
+        }
 
         //printf("prev row: %d, prev column: %d, prev direction: %d \n", prevRow, prevCol, prev_direction);
+
+        if (*current == crumb || *current == crumbed_intersection)
+        {
+            printf("%d %d,", prevRow, prevCol);
+            add_coords(prevRow, prevCol);
+        }
     }
 
     return 0;
@@ -144,41 +123,11 @@ void alloc_path()
     *commands = malloc(350 * sizeof(int *));
 }
 
-void make_commands()
-{
-
-    for (int i = 1; i < pathIndex - 1; i++)
-    {
-
-        int prev = path[i - 1];
-        int next = path[i + 1];
-        int current = path[i];
-
-        if (current == straight && prev != next)
-        {
-            commands[commandIndex] = next;
-            commandIndex++;
-        }
-        else if (current == straight && prev == next)
-        {
-            commands[commandIndex] = straight;
-            commandIndex++;
-        }
-        else if (current != next && next != straight)
-        {
-            commands[commandIndex] = next;
-            commandIndex++;
-        }
-    }
-}
-
 int main()
 {
     alloc_path();
     dfs(start_row, start_col, 0, 0, down, start);
-    print_path();
-    make_commands();
-    print_command();
+    print_coords();
 
     return 0;
 }
